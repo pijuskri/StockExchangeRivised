@@ -176,6 +176,7 @@ namespace StockExchangeRivised
         public ResourceSaleCategory(string name)
         {
             this.name = name;
+            sales = new List<ResourceSale>();
         }
     }
     public class ResourceSale
@@ -183,11 +184,28 @@ namespace StockExchangeRivised
         public double amount;
         public double price;
         public string company;
+        public double soldLastTick=0;
         public ResourceSale(double amount, double price, string company)
         {
             this.amount = amount;
             this.price = price;
             this.company = company;
+        }
+        public static void OrderSalesByPrice(List<ResourceSale> sales)
+        {
+            if (sales.Count <= 2) return;
+            for (int i = 0; i < sales.Count; i++)
+            {
+                for (int d = sales.Count - 2; d > i; d--)
+                {
+                    if (sales[d].price > sales[d + 1].price)
+                    {
+                        ResourceSale temp = sales[d];
+                        sales[d] = sales[d + 1];
+                        sales[d + 1] = temp;
+                    }
+                }
+            }
         }
     }
 }

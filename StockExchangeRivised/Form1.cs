@@ -122,13 +122,15 @@ namespace StockExchangeRivised
         {
             population += (int)(Math.Sqrt(population) * 0.05) + 1;
 
-            SupplyDemandMechanics();
+            //SupplyDemandMechanics();
             CompanyMoneyMechanics();
             AIMechanics();
+            PopulationBuy();
+            ResourcePriceAverage();
             PrintToConsole();
         }
-        #region SupplyDemand
-        void SupplyDemandMechanics()
+        #region OLD*SupplyDemand*
+        /*void SupplyDemandMechanics()
         {
             foreach (var resource in resourceList)
             {
@@ -200,16 +202,20 @@ namespace StockExchangeRivised
 
             return ratio;
         }
+        */
         #endregion
         #region CompanyMechanics
         void CompanyMoneyMechanics()
         {
             foreach (var company in companyList)
             {
-                company.actualProduction = company.productionVolume * CompanyInputDemandMet(
-                    productionRecipeList[ FindRecipeID( company.productionRecipe)].input); //actual production based on the percent of demand met
                 company.value = company.productionVolume * 10;//TODO - base value on something more cool
-                company.revenue = company.actualProduction * MoneyFromRecipe( productionRecipeList[ FindRecipeID( company.productionRecipe)]); //revenue based on recipe profitability and production
+                company.revenue = 0;
+
+                SellResources(company);
+                BuyResources(company);
+                ResourceProduction(company);
+
                 company.sharePrice = company.value / company.totalShares; //calculate share price
                 company.money += company.revenue;
 
@@ -252,7 +258,8 @@ namespace StockExchangeRivised
             {
                 if (random.Next(0,100)>90) //randomizer
                 {
-                    if (RecipeSupplyDemandRatio(productionRecipeList[FindRecipeID(company.productionRecipe)]) < 0.8) //is there demand
+                    Console.WriteLine(CompanyOutputDemand(company));
+                    if (CompanyOutputDemand(company)>0.9) //is there demand
                     {
                         if (company.money > 20) //can afford
                         {
@@ -280,6 +287,84 @@ namespace StockExchangeRivised
             company.sharePrice = company.totalShares / company.value;
             company.money += company.sharePrice * number;
         }
+        #region NewProduction
+        void BuyResources(Company company) //buy resources, create an actual production metric
+        {
+            if (productionRecipeList[FindRecipeID(company.productionRecipe)].input.Count == 0)
+            {
+                company.actualProduction = 1;
+                return;
+            }
+            double totalAmountBought = 0;
+            double totalAmountNeeded = 0;
+            double totalPrice = 0;
+            foreach (var resource in productionRecipeList[FindRecipeID( company.productionRecipe)].input) //brose all required resources for input
+            {
+                double amountNeeded = resource.amount * company.productionVolume * company.productionInput;
+                double amountBought=0;
+                List<ResourceSale> sales = FindSales(resource.name);//get sales by resource name
+                ResourceSale.OrderSalesByPrice(sales);//sort by best price
+                foreach (var sale in sales) //browse sales
+                {
+                    if (amountBought >= amountNeeded) break;
+                    if (sale.amount <= amountNeeded - amountBought)
+                    {
+                        sale.soldLastTick += sale.amount;
+                        amountBought += sale.amount;
+                        totalPrice += sale.amount*sale.price;
+                        sale.amount = 0;
+                    }
+                    else
+                    {
+                        sale.soldLastTick += amountNeeded - amountBought;
+                        totalPrice += (amountNeeded - amountBought) * sale.price;
+                        sale.amount -= amountNeeded - amountBought;
+                        amountBought += amountNeeded - amountBought;
+                    }
+                }
+                totalAmountBought += amountBought;
+                totalAmountNeeded += amountNeeded;
+            }
+            company.actualProduction = totalAmountBought / totalAmountNeeded; //0-1, actual company production
+            company.revenue -= totalPrice;
+        }
+        void ResourceProduction(Company company)
+        {
+            foreach (var resource in productionRecipeList[FindRecipeID(company.productionRecipe)].output)
+            {
+                double production = resource.amount * company.productionVolume * company.productionOutput * company.actualProduction;
+                List<ResourceSale> sales = FindSales(resource.name);
+                bool found = false;
+                foreach (var sale in sales)
+                {
+                    if (sale.company==company.name)
+                    {
+                        found = true;
+                        if (sale.soldLastTick > sale.amount * 10) sale.price = sale.price * 1.01;
+                        else if (sale.soldLastTick < sale.amount * 5) sale.price = sale.price * 0.99;
+                        sale.amount += production;
+                    }
+                }
+                if (!found) sales.Add(new ResourceSale(production, resourceList[FindResourceID(resource.name)].price, company.name));
+            }
+        }
+        void SellResources(Company company)
+        {
+            foreach (var category in resourceSales)
+            {
+                foreach (var sale in category.sales)
+                {
+                    if (sale.company == company.name)
+                    {
+                        company.revenue += sale.soldLastTick * sale.price;
+                        Console.WriteLine("{0} {1}",category.name, sale.soldLastTick);
+                        sale.soldLastTick = 0;
+                    }
+                }
+            }
+        }
+        #endregion
+        /* old production mechanics
         double CompanyInputDemandMet(List<ResourceAmount> inputList)
         {
             if (inputList.Count==0) //check if not a natural resource producer
@@ -314,7 +399,8 @@ namespace StockExchangeRivised
             }
             balance = income - expenses;
             return balance;
-        }
+        }*/
+
         #endregion
         #region AIMechanics
         void AIMechanics() //baseMechnics
@@ -370,6 +456,35 @@ namespace StockExchangeRivised
             return nameList; //return only names
         }
         #endregion
+        #region PopulationMechanics
+        void PopulationBuy()
+        {
+            foreach (var resource in populationDemandList) //brose all required resources for input
+            {
+                double amountNeeded = resource.amountPerHuman * population;
+                double amountBought = 0;
+                List<ResourceSale> sales = FindSales(resource.name);//get sales by resource name
+                ResourceSale.OrderSalesByPrice(sales);//sort by best price
+                foreach (var sale in sales) //browse sales
+                {
+                    if (sale.price > resourceList[FindResourceID(resource.name)].basePrice * 5) break;
+                    if (amountBought >= amountNeeded) break;
+                    if (sale.amount <= amountNeeded - amountBought)
+                    {
+                        sale.soldLastTick += sale.amount;
+                        amountBought += sale.amount;
+                        sale.amount = 0;
+                    }
+                    else
+                    {
+                        sale.soldLastTick += amountNeeded - amountBought;
+                        sale.amount -= amountNeeded - amountBought;
+                        amountBought += amountNeeded - amountBought;
+                    }
+                }
+            }
+        }
+        #endregion
         #region FindID
         int FindResourceID(string name)
         {
@@ -415,7 +530,9 @@ namespace StockExchangeRivised
             }
             return -1;
         }
-        List<ResourceSale> FindSales(string name)
+        #endregion
+        #region Misc
+        List<ResourceSale> FindSales(string name)//returns list of sales of specified resource
         {
             foreach (var saleCategory in resourceSales)
             {
@@ -423,7 +540,44 @@ namespace StockExchangeRivised
             }
             return null;
         }
+        void ResourcePriceAverage()//find resource price average across sales
+        {
+            foreach (var resource in resourceList)
+            {
+                List<ResourceSale> sales = FindSales(resource.name);
+                double amount = 0;
+                double cost = 0;
+                foreach (var sale in sales)
+                {
+                    amount += sale.amount + sale.soldLastTick;
+                    cost += (sale.amount + sale.soldLastTick) * sale.price;
+                }
+                resource.price = cost / amount;
+            }
+        }
+        double ResourceDemand(string name)//Returns total resource sold/total amount
+        {
+            List<ResourceSale> sales = FindSales(name);
+            double totalAmount = 0;
+            double totalSold = 0;
+            foreach (var sale in sales)
+            {
+                totalAmount += sale.amount + sale.soldLastTick;
+                totalSold += sale.amount;
+            }
+            return totalSold / totalAmount;
+        }
+        double CompanyOutputDemand(Company company)
+        {
+            double demandTotal = 0;
+            foreach (var resource in productionRecipeList[FindRecipeID(company.productionRecipe)].output)
+            {
+                demandTotal+= ResourceDemand(resource.name);
+            }
+            return demandTotal / productionRecipeList[FindRecipeID(company.productionRecipe)].output.Count;
+        }
         #endregion
+
         void PrintToConsole()
         {
             //Console.Clear();
