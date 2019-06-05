@@ -1,6 +1,4 @@
-# Project Title
-
-Stock Exchange simulator/video game
+# Stock Exchange simulator/video game
 ## Simulation systems
 ```-Companies exist and produce goods, which are bought by other companies or a single block "population".
 -Good price is determined by companies, depending on how much goods were sold last turn
