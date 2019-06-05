@@ -8,7 +8,7 @@ wheat natural 0.3 100 1 0.3 0.3 0 0
 bread base 0.6 100 1 0.6 0.3 0 0
 
 #AI
-RandomPerson 100 0.1 0.1
+RandomPerson 20 0.1 0.1
 
 #Bank
 NationalBank 3 1000 100
@@ -17,5 +17,5 @@ NationalBank 3 1000 100
 bread 0.1
 
 #Production templates
-wheat-bread wheat 1 / bread 1
--wheat / wheat 1
+wheat-bread 3 wheat 1 / bread 1
+-wheat 2 / wheat 1

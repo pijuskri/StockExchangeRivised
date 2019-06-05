@@ -6,71 +6,118 @@ using System.Threading.Tasks;
 
 namespace StockExchangeRivised
 {
-    public class Company
+    public class Population
     {
-        public string name;
-        public int totalShares, sharesOwnedByCompany;
-        public double money, dividendPercent, revenue, value, sharePrice, productionVolume, productionOutput, productionInput, actualProduction;
-        public string productionRecipe;
-        public List<Share> shareList;
-
-        public Company(string name, int totalShares, int sharesOwnedByCompany, double money, double dividendPercent, double revenue, double value, double sharePrice,
-            double productionVolume, double actualProduction, double productionOutput, double productionInput, string productionRecipe)
+        public Main main;
+        public int people =100;
+        public double money =100, labourCost=1;
+        public Population(Main main, int people,double money, double labourCost)
         {
-            this.name = name;
-            this.totalShares = totalShares;
-            this.sharesOwnedByCompany = sharesOwnedByCompany;
+            this.main = main;
+            this.people = people;
             this.money = money;
-            this.dividendPercent = dividendPercent;
-            this.revenue = revenue;
-            this.value = value;
-            this.sharePrice = sharePrice;
-            this.productionVolume = productionVolume;
-            this.actualProduction = actualProduction;
-            this.productionOutput = productionOutput;
-            this.productionInput = productionInput;
-            this.productionRecipe = productionRecipe;
-            shareList = new List<Share>();
-
+            this.labourCost = labourCost;
         }
-        public void AddShare(string ownerName, int amount)
+        public void PopulationBuy()
         {
-            foreach (var share in shareList) //check if already on list
+            foreach (var resource in main.populationDemandList) //browse all required resources for input
             {
-                if (share.ownerName == ownerName) { share.amount += amount; return; }
-            }
-            shareList.Add(new Share(ownerName, amount));
-        }
-    }
-    public class Resource
-    {
-        public string name, type;
-        public double price, amount, costToProduce, basePrice, flexibility, supply, demand;
+                double amountNeeded = resource.amountPerHuman * main.population.people;
+                double amountBought = 0;
+                List<ResourceSale> sales = main.FindSales(resource.name);//get sales by resource name
+                ResourceSale.OrderSalesByPrice(sales);//sort by best price
+                foreach (var sale in sales) //browse sales
+                {
+                    if (sale.price > main.resourceList[main.FindResourceID(resource.name)].basePrice * 5) break;
+                    if (amountBought >= amountNeeded) break;
+                    if (money < 0) break;
+                    if (sale.amount <= amountNeeded - amountBought)
+                    {
+                        sale.soldLastTick += sale.amount;
+                        amountBought += sale.amount;
+                        money -= sale.amount * sale.price;
+                        sale.amount = 0;
+                    }
+                    else
+                    {
+                        sale.soldLastTick += amountNeeded - amountBought;
+                        sale.amount -= amountNeeded - amountBought;
+                        money -= (amountNeeded - amountBought) * sale.price;
+                        amountBought += amountNeeded - amountBought;
 
-        public Resource(string name, string type, double price, double amount, double costToProduce, double basePrice, double flexibility, double supply, double demand)
+                    }
+                }
+            }
+        }
+        public void PopulationGrowth()
         {
-            this.name = name;
-            this.type = type;
-            this.price = price;
-            this.amount = amount;
-            this.costToProduce = costToProduce;
-            this.basePrice = basePrice;
-            this.flexibility = flexibility;
-            this.supply = supply;
-            this.demand = demand;
+            people += (int)(Math.Sqrt(people) * 0.02) + 1;
         }
     }
+    
     public class AI
     {
+        Main main;
         public string name;
         public double money, riskFactor, randomness;
 
-        public AI(string name, double money, double riskFactor, double randomness)
+        public AI(Main main,string name, double money, double riskFactor, double randomness)
         {
+            this.main = main;
             this.name = name;
             this.money = money;
             this.riskFactor = riskFactor;
             this.randomness = randomness;
+        }
+        public void AIMechanics() //AI investments
+        {
+            Random random = new Random(main.randomizerSeed++ * DateTime.MinValue.Millisecond);
+
+            if (random.Next(0, 100) > 90)
+            {
+                if (money > 10) //buy shares
+                {
+                    foreach (var companyName in RankCompaniesByInvestability()) // go through best company list
+                    {
+                        Company company = main.companyList[main.FindCompanyID(companyName)];
+                        int shareAmountToBuy = 0;
+                        if (company.sharesOwnedByCompany > 0) //if company has shares to sell
+                        {
+                            if (money > company.sharePrice * company.sharesOwnedByCompany) shareAmountToBuy = company.sharesOwnedByCompany; //can buy all shares
+                            else shareAmountToBuy = (int)Math.Floor(money / company.sharePrice); //can only buy some, currently uses all money
+
+                            if (shareAmountToBuy != 0) //can buy any
+                            {
+                                company.sharesOwnedByCompany -= shareAmountToBuy;
+                                money -= company.sharePrice * shareAmountToBuy;
+                                company.AddShare(name, shareAmountToBuy);
+                            }
+                        }
+                        else { } // TODO: buy shares from others
+                    }
+                }
+            }
+        }
+        public List<string> RankCompaniesByInvestability() //based on point system, creates list based on them
+        {
+            List<string> nameList = new List<string>();
+            List<double> pointList = new List<double>();
+            foreach (var company in main.companyList)
+            {
+                double points = 0;
+                points += company.value / 10; //favour big companies
+                points += company.dividendPercent * 3;
+                if (company.revenue > 0) points += company.revenue / company.value; //focus on efficiency
+                else points += company.revenue * 10 / company.value;
+
+                if (pointList.Count == 0) { pointList.Add(points); nameList.Add(company.name); continue; } //if list is empty, add first member
+                for (int i = 0; i < pointList.Count; i++) //put in correct place
+                {
+                    if (points > pointList[i]) { pointList.Insert(i, points); nameList.Insert(i, company.name); break; } //insert in place if more points
+                }
+                { pointList.Add(points); nameList.Add(company.name); }
+            }
+            return nameList; //return only names
         }
     }
     public class Share
@@ -150,12 +197,14 @@ namespace StockExchangeRivised
     public class ProductionRecipe
     {
         public string name;
+        public double labourToProduce;
         public List<ResourceAmount> input;
         public List<ResourceAmount> output;
 
-        public ProductionRecipe(string name, List<ResourceAmount> input, List<ResourceAmount> output)
+        public ProductionRecipe(string name, double labourToProduce, List<ResourceAmount> input, List<ResourceAmount> output)
         {
             this.name = name;
+            this.labourToProduce = labourToProduce;
             this.input = input;
             this.output = output;
         }
