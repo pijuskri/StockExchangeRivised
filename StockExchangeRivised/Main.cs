@@ -23,6 +23,7 @@ namespace StockExchangeRivised
         string inputFile = "..\\..\\data.txt";
         string fileResources = "..\\..\\Resources.json";
         string fileCompanies = "..\\..\\Companies.json";
+        string fileRecipes = "..\\..\\Recipes.json";
 
         public Population population;
         public List<Company> companyList = new List<Company>();
@@ -95,7 +96,7 @@ namespace StockExchangeRivised
                     if (line == "") break;
                     if (line[0] == '#') continue;
 
-                    string[] parts = line.Split(' ');
+                    /*string[] parts = line.Split(' ');
                     string name = parts[0];
                     double labour = Convert.ToDouble(parts[1]);
                     List<ResourceAmount> input = new List<ResourceAmount>();
@@ -115,6 +116,7 @@ namespace StockExchangeRivised
                     }
 
                     productionRecipeList.Add(new ProductionRecipe(name, labour, input, output));
+                    */
                 }
             }
 
@@ -136,6 +138,11 @@ namespace StockExchangeRivised
                 company.sharesOwnedByCompany = company.totalShares;
                 company.shareList = new List<Share>();
             }
+
+            string recipeJson = File.ReadAllText(fileRecipes);
+            productionRecipeList = JsonConvert.DeserializeObject<List<ProductionRecipe>>(recipeJson);
+
+            
         }
         void Initialize()
         {
@@ -352,22 +359,26 @@ namespace StockExchangeRivised
             {
                 CompanyTable.Rows.RemoveAt(0);
             }
-            
-            foreach (var company in companyList)
+
+            try
             {
-                int index = CompanyTable.Rows.Add();
-                DataGridViewRow row = CompanyTable.Rows[index];
-                row.Cells[0].Value = company.name;
-                row.Cells[1].Value = Math.Round(company.money,3);
-                row.Cells[2].Value = Math.Round(company.revenue,3);
-                row.Cells[3].Value = Math.Round(company.value,3);
-                row.Cells[4].Value = company.productionVolume;
-                row.Cells[5].Value = company.productionOutput;
-                row.Cells[6].Value = company.productionInput;
-                row.Cells[7].Value = company.actualProduction*100 + "%";
-                row.Cells[8].Value = company.productionRecipe;
-                row.Cells[9].Value = company.costToProduce;
+                foreach (var company in companyList)
+                {
+                    int index = CompanyTable.Rows.Add();
+                    DataGridViewRow row = CompanyTable.Rows[index];
+                    row.Cells[0].Value = company.name;
+                    row.Cells[1].Value = Math.Round(company.money, 3);
+                    row.Cells[2].Value = Math.Round(company.revenue, 3);
+                    row.Cells[3].Value = Math.Round(company.value, 3);
+                    row.Cells[4].Value = company.productionVolume;
+                    row.Cells[5].Value = company.productionOutput;
+                    row.Cells[6].Value = company.productionInput;
+                    row.Cells[7].Value = Math.Round(company.actualProduction, 3) * 100 + "%";
+                    row.Cells[8].Value = company.productionRecipe;
+                    row.Cells[9].Value = company.costToProduce;
+                }
             }
+            catch { }
         }
         void PopulateResourceTable()
         {
@@ -376,19 +387,26 @@ namespace StockExchangeRivised
                 ResourceTable.Rows.RemoveAt(0);
             }
 
-            foreach (var resource in resourceList)
+            try
             {
-                int index = ResourceTable.Rows.Add();
-                DataGridViewRow row = ResourceTable.Rows[index];
-                row.Cells[0].Value = resource.name;
-                row.Cells[1].Value = resource.type;
-                row.Cells[2].Value = Math.Round(resource.price, 3);
-                row.Cells[3].Value = Math.Round(resource.basePrice, 3);
+                foreach (var resource in resourceList)
+                {
+                    int index = ResourceTable.Rows.Add();
+                    DataGridViewRow row = ResourceTable.Rows[index];
+                    row.Cells[0].Value = resource.name;
+                    row.Cells[1].Value = resource.type;
+                    row.Cells[2].Value = Math.Round(resource.price, 3);
+                    row.Cells[3].Value = Math.Round(resource.basePrice, 3);
+
+                }
             }
+            catch { }
         }
         #endregion
         private readonly SynchronizationContext synchronizationContext;
         private DateTime previousTime = DateTime.Now;
+        List<SaleWindow> saleWindows = new List<SaleWindow>();
+
         public Main()
         {
             InitializeComponent();
@@ -402,6 +420,7 @@ namespace StockExchangeRivised
         {
             AllocConsole();
             PopulateCompanyTable();
+            PopulateResourceTable();
             PrintToConsole();
         }
 
@@ -441,6 +460,18 @@ namespace StockExchangeRivised
             }), value);
 
             previousTime = timeNow;
+        }
+
+        private void ResourceTable_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (ResourceTable.RowCount > 0)
+            {
+                string name = (string)ResourceTable.Rows[e.RowIndex].Cells[0].Value;
+                List< ResourceSale> sales = FindSales(name);
+                SaleWindow saleWindow = new SaleWindow(name,sales);
+                saleWindow.Show();
+                saleWindows.Add(saleWindow);
+            }
         }
     }
 }

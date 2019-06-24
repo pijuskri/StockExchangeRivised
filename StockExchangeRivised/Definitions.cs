@@ -183,6 +183,21 @@ namespace StockExchangeRivised
             this.amountPerHuman = amountPerHuman;
         }
     }
+    public class ProductionRecipe
+    {
+        public string name="";
+        public double labourToProduce=0;
+        public List<ResourceAmount> input=new List<ResourceAmount>();
+        public List<ResourceAmount> output=new List<ResourceAmount>();
+
+        public ProductionRecipe(string name, double labourToProduce, List<ResourceAmount> input, List<ResourceAmount> output)
+        {
+            this.name = name;
+            this.labourToProduce = labourToProduce;
+            this.input = input;
+            this.output = output;
+        }
+    }
     public class ResourceAmount
     {
         public string name;
@@ -192,21 +207,6 @@ namespace StockExchangeRivised
         {
             this.name = name;
             this.amount = amount;
-        }
-    }
-    public class ProductionRecipe
-    {
-        public string name;
-        public double labourToProduce;
-        public List<ResourceAmount> input;
-        public List<ResourceAmount> output;
-
-        public ProductionRecipe(string name, double labourToProduce, List<ResourceAmount> input, List<ResourceAmount> output)
-        {
-            this.name = name;
-            this.labourToProduce = labourToProduce;
-            this.input = input;
-            this.output = output;
         }
     }
     public class HumanPlayer

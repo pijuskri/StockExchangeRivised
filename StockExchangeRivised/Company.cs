@@ -143,12 +143,12 @@ namespace StockExchangeRivised
             double partToBuy = 1;
             costToProduce = 0;
             if (totalProduced > 0) partToBuy = totalSold / totalProduced; //calculate last turns demand
-            partToBuy += (actualProduction - partToBuy) * 0.1;//normalize compared to last turns production
+            //partToBuy += (actualProduction - partToBuy) * 0.1;//normalize compared to last turns production
             if (partToBuy > 1) partToBuy = 1;
 
             if (main.productionRecipeList[main.FindRecipeID(productionRecipe)].input.Count == 0)//if have no inputs to produce, don't buy resources
             {
-                actualProduction = 1 * partToBuy;
+                actualProduction = partToBuy;
                 return;
             }
             double totalAmountBought = 0, totalAmountNeeded = 0, totalPrice = 0;
@@ -221,6 +221,7 @@ namespace StockExchangeRivised
             main.population.money += labourCosts;
             revenue -= labourCosts;
             //Console.WriteLine("labour:{0}", labourCosts);
+
             if (totalProduced > 0) costToProduce += labourCosts / totalProduced;
             else costToProduce += labourCosts;
         }
