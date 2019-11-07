@@ -8,45 +8,47 @@ namespace StockExchangeRivised
 {
     public class Company
     {
-        public Main main;
+        public Instances main;
         public string name = "";
         public int totalShares = 0, sharesOwnedByCompany = 0;
-        public double money = 0, dividendPercent = 0, revenue = 0, value = 0, sharePrice = 0, productionVolume = 0, productionOutput = 0, productionInput = 0, actualProduction = 0,
-            costToProduce = 0, totalSold = 0, totalProduced = 0;
+        public double money = 0, dividendPercent = 0, revenue = 0, value = 0, sharePrice = 0, productionVolume = 0, productionOutput = 0, productionInput = 0;
+		public Info info;
         public string productionRecipe = "";
         public List<Share> shareList;
 
-        public Company(Main main, string name, int totalShares, int sharesOwnedByCompany, double money, double dividendPercent, double revenue, double value, double sharePrice,
-            double productionVolume, double actualProduction, double productionOutput, double productionInput, string productionRecipe)
+        public Company(Instances main, string name, int totalShares, double money, double dividendPercent, 
+            double productionVolume, double productionOutput, double productionInput, string productionRecipe)
         {
             this.main = main;
             this.name = name;
             this.totalShares = totalShares;
-            this.sharesOwnedByCompany = sharesOwnedByCompany;
             this.money = money;
             this.dividendPercent = dividendPercent;
-            this.revenue = revenue;
-            this.value = value;
-            this.sharePrice = sharePrice;
             this.productionVolume = productionVolume;
-            this.actualProduction = actualProduction;
             this.productionOutput = productionOutput;
             this.productionInput = productionInput;
             this.productionRecipe = productionRecipe;
+            sharesOwnedByCompany = this.totalShares;
             shareList = new List<Share>();
-
+			info = new Info();
         }
 
         public void CompanyMoneyMechanics(List<Company> toRemove)
         {
             if (money < -1 * (value) - 100) { toRemove.Add(this); return; }
-            if (money > 300) { main.population.money += (money - 300); money = 300; }
+            if (money > 300)
+            {
+                main.population.money += (money - 300);
+                money = 300;
+            }
             value = productionVolume * 10;//TODO - base value on something more cool
             revenue = 0;
 
-            SellResources();
+            SoldResources();
+            main.population.PopulationBuy();
             BuyResources();
             ResourceProduction();
+            info.Calculate5Turns();
 
             sharePrice = value / totalShares; //calculate share price
             money += revenue;
@@ -54,9 +56,10 @@ namespace StockExchangeRivised
             DividendPayment();
             CompanyInvestment();
         }
+
         public void CompanyInvestment()
         {
-            Random random = new Random(main.randomizerSeed++);
+            Random random = new Random(Instances.randomizerSeed++);
             /*if (random.Next(0, 100) > 95) //make some shares if price too big
             {
                 if (sharePrice > 3)
@@ -80,8 +83,8 @@ namespace StockExchangeRivised
             //if doing well, expand
             else if (money > 0 && revenue > 0 && random.Next(0, 100) > 90)
             {
-                //Console.WriteLine("{0}:{1}",name,CompanyOutputDemand(company));
-                if (CompanyOutputDemand() > 0.9 && actualProduction > 0.9) //is there demand
+                Console.WriteLine("INVEST: {0}:{1}",name,CompanyOutputDemand());
+                if (CompanyOutputDemand() > 0.9 && info.actualProductionPast5Turns > 0.9) //is there demand
                 {
                     if (money > 20) //can afford
                     {
@@ -102,15 +105,17 @@ namespace StockExchangeRivised
                     }
                 }
             }
-            if (actualProduction < 0.8 && revenue < 0 && random.Next(0, 100) > 90)
+            // if not doing well, close factories
+            if (info.actualProductionPast5Turns < 0.8 && revenue < 0 && random.Next(0, 100) > 90)
             {
-                int amountToClose = (int)Math.Floor((1 - actualProduction) * productionVolume) / 2;
+                int amountToClose = (int)Math.Floor((1 - info.actualProductionPast5Turns) * productionVolume) / 2;
                 money += amountToClose * 10;
                 main.population.money += amountToClose * 10;
                 productionVolume -= amountToClose;
 
             }
         }
+
         public void DividendPayment()
         {
             if (dividendPercent > 0)//if pays dividends
@@ -121,6 +126,7 @@ namespace StockExchangeRivised
                 }
             }
         }
+
         public void Bankrupcy()
         {
             foreach (var category in main.resourceSales)
@@ -138,17 +144,17 @@ namespace StockExchangeRivised
         }
 
         #region Production
-        public void BuyResources() //buy resources, create an actual production metric
+        public void BuyResources()
         {
             double partToBuy = 1;
-            costToProduce = 0;
-            if (totalProduced > 0) partToBuy = totalSold / totalProduced; //calculate last turns demand
-            //partToBuy += (actualProduction - partToBuy) * 0.1;//normalize compared to last turns production
+            info.costToProduce = 0;
+            if (info.producedPast5Turns > 0 && CompanyOutputDemand() < 0.90) partToBuy = info.soldPast5Turns / info.producedPast5Turns; //calculate last turns demand
             if (partToBuy > 1) partToBuy = 1;
+            Console.WriteLine("\ncompany demand: "+ CompanyOutputDemand() + " " + this.name); 
 
             if (main.productionRecipeList[main.FindRecipeID(productionRecipe)].input.Count == 0)//if have no inputs to produce, don't buy resources
             {
-                actualProduction = partToBuy;
+                info.actualProduction = partToBuy;
                 return;
             }
             double totalAmountBought = 0, totalAmountNeeded = 0, totalPrice = 0;
@@ -163,7 +169,7 @@ namespace StockExchangeRivised
                     if (amountBought >= amountNeeded) break;
                     if (sale.amount <= amountNeeded - amountBought)//if whole sale not enough to fullfill needs
                     {
-                        sale.soldLastTick += sale.amount;
+                        sale.soldThisTick += sale.amount;
                         amountBought += sale.amount;
                         totalPrice += sale.amount * sale.price;
                         sale.amount = 0;
@@ -171,7 +177,7 @@ namespace StockExchangeRivised
                     else
                     {
                         double toBuy = amountNeeded - amountBought;
-                        sale.soldLastTick += toBuy;
+                        sale.soldThisTick += toBuy;
                         totalPrice += toBuy * sale.price;
                         sale.amount -= toBuy;
                         amountBought += toBuy;
@@ -180,20 +186,21 @@ namespace StockExchangeRivised
                 totalAmountBought += amountBought;
                 totalAmountNeeded += amountNeeded;
             }//browse all required resources for input
-            if (totalAmountNeeded > 0) actualProduction = (totalAmountBought / totalAmountNeeded) * partToBuy; //0-1, actual company production
+            if (totalAmountNeeded > 0) info.actualProduction = (totalAmountBought / totalAmountNeeded) * partToBuy; //0-1, actual company production
             revenue -= totalPrice;
-            if (totalAmountBought > 0) costToProduce = totalPrice / totalAmountBought;
+            if (totalAmountBought > 0) info.costToProduce = totalPrice / totalAmountBought;
+            else info.costToProduce = totalPrice;
         }
         public void ResourceProduction()
         {
             double labourCosts = 0;
             LabourCosts(ref labourCosts);
 
-            totalProduced = 0;
+            info.totalProduced = 0;
             foreach (var resource in main.productionRecipeList[main.FindRecipeID(productionRecipe)].output)
             {
-                double production = resource.amount * productionVolume * productionOutput * actualProduction;
-                totalProduced += production;
+                double production = resource.amount * productionVolume * productionOutput * info.actualProduction;
+                info.totalProduced += production;
                 List<ResourceSale> sales = main.FindSales(resource.name);
                 bool found = false;
                 foreach (var sale in sales)
@@ -203,10 +210,11 @@ namespace StockExchangeRivised
                         found = true;
                         //double saleRatio = SaleRatioCalcExperimental(production,sale.soldLastTick);
                         //Console.WriteLine("ratio:{0}", saleRatio);
-                        if (production <= sale.soldLastTick || costToProduce > sale.price) sale.price *= 1.005;
-                        if (production > sale.soldLastTick && costToProduce < sale.price) sale.price *= 0.995;
+                        //if(main.FindResource(resource.name).ResourceDemand()<0.9 && production > sale.soldLastTick) sale.price = main.FindResource(resource.name).price * 0.9;
+                        if ((production <= sale.soldLastTick) || info.costToProduce > sale.price && main.FindResource(resource.name).ResourceDemand() > 0) sale.price *= (0.01 * main.FindResource(resource.name).ResourceDemand()) + 1;
+                        else if (production > sale.soldLastTick && main.FindResource(resource.name).ResourceDemand() < 0.9 && info.costToProduce < sale.price) sale.price *= 0.990;
+                        //else if(productionVolume>=1 && sale.soldLastTick<1 && revenue<0) sale.price = Main.changeNumberTowards
                         sale.amount += production;
-                        sale.soldLastTick = 0;
                         break;
                     }
                 }
@@ -214,29 +222,35 @@ namespace StockExchangeRivised
             }
 
         }
+
+        ///Calculates the labour costs and impacts revenue and population income
         public void LabourCosts(ref double labourCosts)
         {
-            labourCosts = productionVolume * (actualProduction / 2 + 0.5) *
-             main.productionRecipeList[main.FindRecipeID(productionRecipe)].labourToProduce * main.population.labourCost;
+            labourCosts = productionVolume * (info.actualProduction / 2 + 0.5) *
+             main.FindRecipe(productionRecipe).labourToProduce * main.population.labourCost;
             main.population.money += labourCosts;
             revenue -= labourCosts;
             //Console.WriteLine("labour:{0}", labourCosts);
 
-            if (totalProduced > 0) costToProduce += labourCosts / totalProduced;
-            else costToProduce += labourCosts;
+            if (info.totalProduced > 0) info.costToProduce += labourCosts / info.totalProduced;
+            else info.costToProduce += labourCosts;
         }
-        public void SellResources()
+
+        /// Calculates how many resources were sold, add to revenuw
+        public void SoldResources()
         {
-            totalSold = 0;
+            info.totalSold = 0;
             foreach (var category in main.resourceSales)
             {
                 foreach (var sale in category.sales)
                 {
                     if (sale.company == name)
                     {
-                        revenue += sale.soldLastTick * sale.price;
-                        totalSold += sale.soldLastTick;
-                        Console.WriteLine("{0} {1}", category.name, sale.soldLastTick);
+                        revenue += sale.soldThisTick * sale.price;
+                        info.totalSold += sale.soldThisTick;
+                        Console.WriteLine("{0} {1}", category.name, sale.soldThisTick);
+                        sale.soldLastTick = sale.soldThisTick;
+                        sale.soldThisTick = 0;
                     }
                 }
             }
@@ -258,14 +272,18 @@ namespace StockExchangeRivised
             sharePrice = totalShares / value;
             money += sharePrice * number;
         }
+        /// <summary>
+        /// calculates total demand of resources produced by company
+        /// </summary>
+        /// <returns>0-1 ratio of demand</returns>
         public double CompanyOutputDemand()
         {
             double demandTotal = 0;
             foreach (var resource in main.productionRecipeList[main.FindRecipeID(productionRecipe)].output)
             {
-                demandTotal += main.ResourceDemand(resource.name);
+                demandTotal += main.FindResource(resource.name).ResourceDemand();
             }
-            return demandTotal / main.productionRecipeList[main.FindRecipeID(productionRecipe)].output.Count;
+            return demandTotal / main.FindRecipe(productionRecipe).output.Count;
         }
         public double SaleRatioCalcExperimental(double a, double b)
         {
@@ -282,5 +300,26 @@ namespace StockExchangeRivised
             ats = (ats/50)+1;
             return ats;
         }
+    }
+
+	///Stores all company related statistics and information
+    public class Info
+    {
+		public double totalSold = 0, totalProduced = 0, actualProduction = 0, costToProduce = 0, producedPast5Turns = 0, soldPast5Turns = 0, actualProductionPast5Turns=0;
+		public void Calculate5Turns()
+		{
+			if (Instances.currentTurn < 5)
+            {
+                producedPast5Turns += totalProduced;
+                soldPast5Turns += totalSold;
+                actualProductionPast5Turns = (actualProductionPast5Turns + actualProduction) / 2;
+            }
+			else
+            {
+                producedPast5Turns = (producedPast5Turns * 4 + totalProduced)/5;
+                soldPast5Turns = (soldPast5Turns * 4 + totalSold) / 5;
+                actualProductionPast5Turns = (actualProductionPast5Turns * 4 + actualProduction) / 5;
+            }
+		}
     }
 }

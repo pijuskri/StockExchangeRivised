@@ -8,10 +8,10 @@ namespace StockExchangeRivised
 {
     public class Population
     {
-        public Main main;
+        public Instances main;
         public int people =100;
         public double money =100, labourCost=1;
-        public Population(Main main, int people,double money, double labourCost)
+        public Population(Instances main, int people,double money, double labourCost)
         {
             this.main = main;
             this.people = people;
@@ -22,7 +22,7 @@ namespace StockExchangeRivised
         {
             foreach (var resource in main.populationDemandList) //browse all required resources for input
             {
-                double amountNeeded = resource.amountPerHuman * main.population.people;
+                double amountNeeded = resource.amount * main.population.people;
                 double amountBought = 0;
                 List<ResourceSale> sales = main.FindSales(resource.name);//get sales by resource name
                 ResourceSale.OrderSalesByPrice(sales);//sort by best price
@@ -31,21 +31,13 @@ namespace StockExchangeRivised
                     if (sale.price > main.resourceList[main.FindResourceID(resource.name)].basePrice * 5) break;
                     if (amountBought >= amountNeeded) break;
                     if (money < 0) break;
-                    if (sale.amount <= amountNeeded - amountBought)
-                    {
-                        sale.soldLastTick += sale.amount;
-                        amountBought += sale.amount;
-                        money -= sale.amount * sale.price;
-                        sale.amount = 0;
-                    }
-                    else
-                    {
-                        sale.soldLastTick += amountNeeded - amountBought;
-                        sale.amount -= amountNeeded - amountBought;
-                        money -= (amountNeeded - amountBought) * sale.price;
-                        amountBought += amountNeeded - amountBought;
+                    double toBuy = amountNeeded - amountBought;
+                    if (sale.amount < toBuy) toBuy = sale.amount;
 
-                    }
+                    sale.soldThisTick += toBuy;
+                    sale.amount -= toBuy;
+                    money -= toBuy * sale.price;
+                    amountBought += toBuy;
                 }
             }
         }
@@ -57,11 +49,11 @@ namespace StockExchangeRivised
     
     public class AI
     {
-        Main main;
+        Instances main;
         public string name;
         public double money, riskFactor, randomness;
 
-        public AI(Main main,string name, double money, double riskFactor, double randomness)
+        public AI(Instances main,string name, double money, double riskFactor, double randomness)
         {
             this.main = main;
             this.name = name;
@@ -71,7 +63,7 @@ namespace StockExchangeRivised
         }
         public void AIMechanics() //AI investments
         {
-            Random random = new Random(main.randomizerSeed++ * DateTime.MinValue.Millisecond);
+            Random random = new Random(Instances.randomizerSeed++ * DateTime.MinValue.Millisecond);
 
             if (random.Next(0, 100) > 90)
             {
@@ -172,7 +164,7 @@ namespace StockExchangeRivised
             this.moneyPaidBack = moneyPaidBack;
         }
     }
-    public class PopulationDemand
+    /*public class PopulationDemand
     {
         public string name;
         public double amountPerHuman;
@@ -182,7 +174,7 @@ namespace StockExchangeRivised
             this.name = name;
             this.amountPerHuman = amountPerHuman;
         }
-    }
+    }*/
     public class ProductionRecipe
     {
         public string name="";
@@ -234,6 +226,7 @@ namespace StockExchangeRivised
         public double price;
         public string company;
         public double soldLastTick=0;
+        public double soldThisTick = 0;
         public ResourceSale(double amount, double price, string company)
         {
             this.amount = amount;
@@ -242,7 +235,8 @@ namespace StockExchangeRivised
         }
         public static void OrderSalesByPrice(List<ResourceSale> sales)
         {
-            if (sales.Count <= 2) return;
+            sales.Sort(new ResourceSaleComparer());
+            /*if (sales.Count <= 2) return;
             for (int i = 0; i < sales.Count; i++)
             {
                 for (int d = sales.Count - 2; d > i; d--)
@@ -254,6 +248,15 @@ namespace StockExchangeRivised
                         sales[d + 1] = temp;
                     }
                 }
+            }*/
+        }
+        class ResourceSaleComparer : IComparer<ResourceSale>
+        {
+            public int Compare(ResourceSale r1, ResourceSale r2)
+            {
+                if (r1.price > r2.price) return 1;
+                else if (r1.price == r2.price) return 0;
+                else return -1;
             }
         }
     }

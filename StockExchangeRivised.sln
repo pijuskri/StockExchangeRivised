@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockExchangeRivised", "StockExchangeRivised\StockExchangeRivised.csproj", "{A53F7178-2C89-4FDE-80E9-AC2E17F4CC71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockExchangeRivisedTests", "StockExchangeRivisedTests\StockExchangeRivisedTests.csproj", "{B35B0273-A52F-413B-BC5E-AD20D9632EAE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,8 +17,15 @@ Global
 		{A53F7178-2C89-4FDE-80E9-AC2E17F4CC71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A53F7178-2C89-4FDE-80E9-AC2E17F4CC71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A53F7178-2C89-4FDE-80E9-AC2E17F4CC71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B35B0273-A52F-413B-BC5E-AD20D9632EAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B35B0273-A52F-413B-BC5E-AD20D9632EAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B35B0273-A52F-413B-BC5E-AD20D9632EAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B35B0273-A52F-413B-BC5E-AD20D9632EAE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0127187B-1B5D-4BE3-A447-60D7126C2F4E}
 	EndGlobalSection
 EndGlobal

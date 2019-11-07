@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="Company.cs" />
     <Compile Include="Definitions.cs" />
+    <Compile Include="Instances.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
