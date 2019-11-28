@@ -21,9 +21,9 @@ namespace StockExchangeRivised
         static extern bool AllocConsole();
 
         public static string inputFile = "..\\..\\data.txt";
-        public static string fileResources = "..\\..\\Resources.json";
-        public static string fileCompanies = "..\\..\\Companies.json";
-        public static string fileRecipes = "..\\..\\Recipes.json";
+        public static string fileResources = "..\\..\\JSON\\Resources.json";
+        public static string fileCompanies = "..\\..\\JSON\\Companies.json";
+        public static string fileRecipes = "..\\..\\JSON\\Recipes.json";
 
         public Instances ic;
 
@@ -33,7 +33,7 @@ namespace StockExchangeRivised
         {
             //Console.Clear();
             Console.WriteLine("///////Turn:{0}////////", Instances.currentTurn++);
-            foreach (var resource in ic.resourceList)
+            /*foreach (var resource in ic.resourceList)
             {
                 Console.WriteLine("{0} -price:{1:F3}, supplyDemand:{2:F}", resource.name, resource.price, resource.supply / resource.demand);
             }
@@ -47,6 +47,7 @@ namespace StockExchangeRivised
             {
                 Console.WriteLine("{0} - money:{1:F}", human.name, human.money);
             }
+			*/
             Console.WriteLine("pop:{0}, money:{1}", ic.population.people, ic.population.money);
             Console.WriteLine();
         }
@@ -100,8 +101,49 @@ namespace StockExchangeRivised
             }
             catch { }
         }
-        #endregion
-        private readonly SynchronizationContext synchronizationContext;
+		void PopulatePeopleTable()
+		{
+			while (PeopleTable.Rows.Count > 1)
+			{
+				PeopleTable.Rows.RemoveAt(0);
+			}
+
+			try
+			{
+				foreach (var person in ic.AIList)
+				{
+					int index = PeopleTable.Rows.Add();
+					DataGridViewRow row = PeopleTable.Rows[index];
+					row.Cells[0].Value = person.name;
+					row.Cells[1].Value = Math.Round(person.money, 1);
+
+				}
+			}
+			catch { }
+		}
+		void PopulateShareSaleTable()
+		{
+			while (ShareSaleTable.Rows.Count > 1)
+			{
+				ShareSaleTable.Rows.RemoveAt(0);
+			}
+
+			try
+			{
+				foreach (var sale in ic.shareSaleListing)
+				{
+					int index = ShareSaleTable.Rows.Add();
+					DataGridViewRow row = ShareSaleTable.Rows[index];
+					row.Cells[0].Value = sale.sellerName;
+					row.Cells[1].Value = sale.company;
+					row.Cells[2].Value = Math.Round(sale.amount, 1);
+					row.Cells[3].Value = Math.Round(sale.price, 3);
+				}
+			}
+			catch { }
+		}
+		#endregion
+		private readonly SynchronizationContext synchronizationContext;
         private DateTime previousTime = DateTime.Now;
         List<SaleWindow> saleWindows = new List<SaleWindow>();
 
@@ -122,17 +164,13 @@ namespace StockExchangeRivised
         private void Form1_Load(object sender, EventArgs e)
         {
             AllocConsole();
-            PopulateCompanyTable();
-            PopulateResourceTable();
-            PrintToConsole();
-        }
+			UpdateUI();
+		}
 
         private void nextTurn_Click(object sender, EventArgs e)
         {
             ic.NextCalculation();
-            PopulateCompanyTable();
-            PopulateResourceTable();
-            PrintToConsole();
+			UpdateUI();
             
         }
 
@@ -140,12 +178,17 @@ namespace StockExchangeRivised
         {
             await Task.Run(() => 
             {
-                for (int i = 0; i < 10; i++)
-                {
-                    ic.NextCalculation();
-                    UpdateUI();
-                    //Thread.Sleep(100);
-                }
+				lock (this)
+				{
+					for (int i = 0; i < 100; i++)
+					{
+						ic.NextCalculation();
+						
+						//Thread.Sleep(35);
+					}
+					UpdateUI();
+					
+				}
             });
             PrintToConsole();
         }
@@ -160,6 +203,11 @@ namespace StockExchangeRivised
             {
                 PopulateCompanyTable();
                 PopulateResourceTable();
+				PopulatePeopleTable();
+				if (ShareSaleTable.Visible) PopulateShareSaleTable();
+				LabourCost.Text = ""+ Math.Round(ic.population.labourCost,3);
+				PrintToConsole();
+				
             }), value);
 
             previousTime = timeNow;
@@ -170,7 +218,7 @@ namespace StockExchangeRivised
             if (ResourceTable.RowCount > 0)
             {
                 string name = (string)ResourceTable.Rows[e.RowIndex].Cells[0].Value;
-                List< ResourceSale> sales = ic.FindSales(name);
+                List< ResourceSale> sales = ic.FindResource(name).sales;
                 SaleWindow saleWindow = new SaleWindow(name,sales);
                 saleWindow.Show();
                 saleWindows.Add(saleWindow);

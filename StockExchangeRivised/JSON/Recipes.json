@@ -1,0 +1,36 @@
+﻿[
+	{
+		"name":"wheat-bread",
+		"labourToProduce":3,
+		"costToBuild":50,
+		"input":
+		[
+			{
+				"name":"wheat",
+				"amount":1
+			}
+		],
+		"output":
+		[
+			{
+				"name":"bread",
+				"amount":1
+			}
+		]
+	},
+	{
+		"name":"-wheat",
+		"labourToProduce":2,
+		"costToBuild":50,
+		"input":
+		[
+		],
+		"output":
+		[
+			{
+				"name":"wheat",
+				"amount":1
+			}
+		]
+	}
+]

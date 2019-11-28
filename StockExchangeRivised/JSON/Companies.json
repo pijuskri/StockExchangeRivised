@@ -1,0 +1,52 @@
+﻿[
+	{
+		"name":"Baking Company",
+		"money":3,
+		"totalShares":10,
+		"dividendPercent":0.05,
+		"productionVolume":5,
+		"productionInput":1,
+		"productionOutput":1,
+		"productionRecipe":"wheat-bread"
+	},
+	{
+		"name":"Baking Company NextGen",
+		"money":3,
+		"totalShares":10,
+		"dividendPercent":0.05,
+		"productionVolume":5,
+		"productionInput":1,
+		"productionOutput":1,
+		"productionRecipe":"wheat-bread"
+	},
+	{
+		"name":"Baking Company2",
+		"money":3,
+		"totalShares":10,
+		"dividendPercent":0.05,
+		"productionVolume":5,
+		"productionInput":1,
+		"productionOutput":1,
+		"productionRecipe":"wheat-bread"
+	},
+	{
+		"name":"Wheat Company",
+		"money":3,
+		"totalShares":10,
+		"dividendPercent":0.05,
+		"productionVolume":10,
+		"productionInput":1,
+		"productionOutput":1,
+		"productionRecipe":"-wheat"
+	},
+	{
+		"name":"Wheat Company2",
+		"money":3,
+		"totalShares":10,
+		"dividendPercent":0.01,
+		"productionVolume":10,
+		"productionInput":1,
+		"productionOutput":1,
+		"productionRecipe":"-wheat"
+	}
+]

@@ -8,7 +8,8 @@ wheat natural 0.3 100 1 0.3 0.3 0 0
 bread base 0.6 100 1 0.6 0.3 0 0
 
 #AI
-RandomPerson 20 0.1 0.1
+Bill 2000 0.1 0.1
+John 2000 0.1 0.1
 
 #Bank
 NationalBank 3 1000 100

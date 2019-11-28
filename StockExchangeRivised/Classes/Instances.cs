@@ -22,7 +22,7 @@ namespace StockExchangeRivised
         public List<ShareSale> shareSaleListing;
         public List<ResourceAmount> populationDemandList;
         public List<ProductionRecipe> productionRecipeList;
-        public List<ResourceSaleCategory> resourceSales;
+        
         public HumanPlayer human;
         public static int currentTurn = 0;
         public static int randomizerSeed = 1;
@@ -36,13 +36,15 @@ namespace StockExchangeRivised
             shareSaleListing = new List<ShareSale>();
             populationDemandList = new List<ResourceAmount>();
             productionRecipeList = new List<ProductionRecipe>();
-            resourceSales = new List<ResourceSaleCategory>();
             human = new HumanPlayer(100);
         }
         public void NextCalculation()
         {
             population.PopulationGrowth();
-            CompanyCalc();
+			population.PopulationBuy();
+			population.CreateNewAi();
+			population.CalculateInflation5();
+			CompanyCalc();
 
             foreach (var human in AIList)
             {
@@ -53,6 +55,7 @@ namespace StockExchangeRivised
             {
                 resource.ResourcePriceAverage();
             }
+			population.Wages();
 
         }
         public void CompanyCalc()
@@ -154,7 +157,7 @@ namespace StockExchangeRivised
             {
                 resource.main = this;
                 resource.price = resource.basePrice;
-                resourceSales.Add(new ResourceSaleCategory(resource.name));
+				resource.sales = new List<ResourceSale>();
             }
 
             string companyJson = File.ReadAllText(Main.fileCompanies);
@@ -264,18 +267,34 @@ namespace StockExchangeRivised
         }
         #endregion
         #region Misc
-        public List<ResourceSale> FindSales(string name)//returns list of sales of specified resource
-        {
-            foreach (var saleCategory in resourceSales)
-            {
-                if (name == saleCategory.name) return saleCategory.sales;
-            }
-            throw new ArgumentException();
-        }
+		public List<ResourceSale> FindSalesCompany(string name)//returns list of sales of specified resource
+		{
+			List<ResourceSale> sales = new List<ResourceSale>();
+			foreach (var resource in resourceList)
+			{
+				foreach (var sale in resource.sales)
+				{
+					if (name == sale.company) sales.Add(sale);
+				}
+			}
+			return sales;
+		}
+		/// <summary>
+		/// Calculates total amoount of resource on sale
+		/// </summary>
+		/// <param name="name">name of resource</param>
+		/// <returns></returns>
+		public double TotalOnSale(string name)
+		{
+			double totalAmount = 0;
+			foreach (var sale in FindResource(name).sales)
+			{
+				totalAmount += sale.amount;
+			}
+			return totalAmount;
+		}
 
-
-
-        public static double changeNumberTowards(double input, double goal, double percent)
+		public static double changeNumberTowards(double input, double goal, double percent)
         {
             double output = 0;
             if (input < goal) output = input + (goal - input) * percent;
