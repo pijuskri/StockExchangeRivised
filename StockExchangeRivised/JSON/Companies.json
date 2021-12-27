@@ -13,7 +13,7 @@
 		"name":"Baking Company NextGen",
 		"money":3,
 		"totalShares":10,
-		"dividendPercent":0.05,
+		"dividendPercent":0.1,
 		"productionVolume":5,
 		"productionInput":1,
 		"productionOutput":1,
@@ -48,5 +48,15 @@
 		"productionInput":1,
 		"productionOutput":1,
 		"productionRecipe":"-wheat"
+	},
+	{
+		"name":"Coal diggers",
+		"money":3,
+		"totalShares":10,
+		"dividendPercent":0.1,
+		"productionVolume":5,
+		"productionInput":1,
+		"productionOutput":1,
+		"productionRecipe":"-coal"
 	}
 ]

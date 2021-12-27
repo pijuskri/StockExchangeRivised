@@ -2,7 +2,7 @@
 	{
 		"name":"wheat",
 		"type":"natural",
-		"basePrice":0.3,
+		"basePrice":0.35,
 		"flexibility":0.3
 	},
 	{
@@ -10,5 +10,29 @@
 		"type":"base",
 		"basePrice":0.6,
 		"flexibility":0.3
+	},
+	{
+		"name":"coal",
+		"type":"natural",
+		"basePrice":0.2,
+		"flexibility":0.3
+	},
+	{
+		"name":"wood",
+		"type":"natural",
+		"basePrice":0.2,
+		"flexibility":0.3
+	},
+	{
+		"name": "furniture",
+		"type": "base",
+		"basePrice": 2,
+		"flexibility": 0.3
+	},
+	{
+		"name": "electricity",
+		"type": "base",
+		"basePrice": 0.3,
+		"flexibility": 0.3
 	}
 ]

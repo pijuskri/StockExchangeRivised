@@ -28,6 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
+			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+			System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+			System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
 			this.nextTurn = new System.Windows.Forms.Button();
 			this.Next10Turns = new System.Windows.Forms.Button();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
@@ -54,14 +57,26 @@
 			this.PeopleTable = new System.Windows.Forms.DataGridView();
 			this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Moneyperson = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.LabourCost = new System.Windows.Forms.TextBox();
-			this.LabourCostLabel = new System.Windows.Forms.Label();
+			this.Assets = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
 			this.ShareSaleTable = new System.Windows.Forms.DataGridView();
 			this.SellerName = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Amount = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.PriceShare = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.tabPage5 = new System.Windows.Forms.TabPage();
+			this.BankTable = new System.Windows.Forms.DataGridView();
+			this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.dataGridViewTextBoxColumn7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.tabPage6 = new System.Windows.Forms.TabPage();
+			this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+			this.LabourCost = new System.Windows.Forms.TextBox();
+			this.LabourCostLabel = new System.Windows.Forms.Label();
+			this.label1 = new System.Windows.Forms.Label();
+			this.Population = new System.Windows.Forms.TextBox();
+			this.ChartSelection = new System.Windows.Forms.ComboBox();
 			this.tabPage2.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.ResourceTable)).BeginInit();
 			this.tabPage1.SuspendLayout();
@@ -71,6 +86,10 @@
 			((System.ComponentModel.ISupportInitialize)(this.PeopleTable)).BeginInit();
 			this.tabPage4.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.ShareSaleTable)).BeginInit();
+			this.tabPage5.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.BankTable)).BeginInit();
+			this.tabPage6.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// nextTurn
@@ -98,10 +117,10 @@
 			this.tabPage2.Controls.Add(this.ResourceTable);
 			this.tabPage2.Location = new System.Drawing.Point(4, 22);
 			this.tabPage2.Name = "tabPage2";
-			this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+			this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
 			this.tabPage2.Size = new System.Drawing.Size(903, 618);
 			this.tabPage2.TabIndex = 1;
-			this.tabPage2.Text = "tabPage2";
+			this.tabPage2.Text = "Resources";
 			this.tabPage2.UseVisualStyleBackColor = true;
 			// 
 			// ResourceTable
@@ -161,10 +180,10 @@
 			this.tabPage1.Controls.Add(this.CompanyTable);
 			this.tabPage1.Location = new System.Drawing.Point(4, 22);
 			this.tabPage1.Name = "tabPage1";
-			this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+			this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
 			this.tabPage1.Size = new System.Drawing.Size(903, 618);
 			this.tabPage1.TabIndex = 0;
-			this.tabPage1.Text = "tabPage1";
+			this.tabPage1.Text = "Companies";
 			this.tabPage1.UseVisualStyleBackColor = true;
 			// 
 			// CompanyTable
@@ -248,6 +267,7 @@
 			this.productionRecipe.HeaderText = "Production Recipe";
 			this.productionRecipe.MinimumWidth = 6;
 			this.productionRecipe.Name = "productionRecipe";
+			this.productionRecipe.Width = 125;
 			// 
 			// CostToProduce
 			// 
@@ -262,6 +282,8 @@
 			this.tabControl1.Controls.Add(this.tabPage2);
 			this.tabControl1.Controls.Add(this.tabPage3);
 			this.tabControl1.Controls.Add(this.tabPage4);
+			this.tabControl1.Controls.Add(this.tabPage5);
+			this.tabControl1.Controls.Add(this.tabPage6);
 			this.tabControl1.Location = new System.Drawing.Point(12, -1);
 			this.tabControl1.Name = "tabControl1";
 			this.tabControl1.SelectedIndex = 0;
@@ -272,12 +294,12 @@
 			// 
 			this.tabPage3.Controls.Add(this.PeopleTable);
 			this.tabPage3.Location = new System.Drawing.Point(4, 22);
-			this.tabPage3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.tabPage3.Margin = new System.Windows.Forms.Padding(2);
 			this.tabPage3.Name = "tabPage3";
-			this.tabPage3.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.tabPage3.Padding = new System.Windows.Forms.Padding(2);
 			this.tabPage3.Size = new System.Drawing.Size(903, 618);
 			this.tabPage3.TabIndex = 2;
-			this.tabPage3.Text = "tabPage3";
+			this.tabPage3.Text = "AI";
 			this.tabPage3.UseVisualStyleBackColor = true;
 			// 
 			// PeopleTable
@@ -285,18 +307,22 @@
 			this.PeopleTable.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 			this.PeopleTable.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn2,
-            this.Moneyperson});
+            this.Moneyperson,
+            this.Assets});
 			this.PeopleTable.Location = new System.Drawing.Point(1, 3);
 			this.PeopleTable.Name = "PeopleTable";
+			this.PeopleTable.ReadOnly = true;
 			this.PeopleTable.RowHeadersWidth = 51;
 			this.PeopleTable.Size = new System.Drawing.Size(902, 615);
 			this.PeopleTable.TabIndex = 3;
+			this.PeopleTable.VirtualMode = true;
 			// 
 			// dataGridViewTextBoxColumn2
 			// 
 			this.dataGridViewTextBoxColumn2.HeaderText = "Name";
 			this.dataGridViewTextBoxColumn2.MinimumWidth = 6;
 			this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+			this.dataGridViewTextBoxColumn2.ReadOnly = true;
 			this.dataGridViewTextBoxColumn2.Width = 125;
 			// 
 			// Moneyperson
@@ -304,23 +330,14 @@
 			this.Moneyperson.HeaderText = "Money";
 			this.Moneyperson.MinimumWidth = 6;
 			this.Moneyperson.Name = "Moneyperson";
+			this.Moneyperson.ReadOnly = true;
 			this.Moneyperson.Width = 125;
 			// 
-			// LabourCost
+			// Assets
 			// 
-			this.LabourCost.Location = new System.Drawing.Point(1016, 72);
-			this.LabourCost.Name = "LabourCost";
-			this.LabourCost.Size = new System.Drawing.Size(100, 20);
-			this.LabourCost.TabIndex = 4;
-			// 
-			// LabourCostLabel
-			// 
-			this.LabourCostLabel.AutoSize = true;
-			this.LabourCostLabel.Location = new System.Drawing.Point(944, 75);
-			this.LabourCostLabel.Name = "LabourCostLabel";
-			this.LabourCostLabel.Size = new System.Drawing.Size(66, 13);
-			this.LabourCostLabel.TabIndex = 5;
-			this.LabourCostLabel.Text = "Labour cost:";
+			this.Assets.HeaderText = "Assets";
+			this.Assets.Name = "Assets";
+			this.Assets.ReadOnly = true;
 			// 
 			// tabPage4
 			// 
@@ -330,7 +347,7 @@
 			this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
 			this.tabPage4.Size = new System.Drawing.Size(903, 618);
 			this.tabPage4.TabIndex = 3;
-			this.tabPage4.Text = "tabPage4";
+			this.tabPage4.Text = "Share Sales";
 			this.tabPage4.UseVisualStyleBackColor = true;
 			// 
 			// ShareSaleTable
@@ -364,18 +381,155 @@
 			// Amount
 			// 
 			this.Amount.HeaderText = "Amount";
+			this.Amount.MinimumWidth = 6;
 			this.Amount.Name = "Amount";
+			this.Amount.Width = 125;
 			// 
 			// PriceShare
 			// 
 			this.PriceShare.HeaderText = "Price";
+			this.PriceShare.MinimumWidth = 6;
 			this.PriceShare.Name = "PriceShare";
+			this.PriceShare.Width = 125;
+			// 
+			// tabPage5
+			// 
+			this.tabPage5.Controls.Add(this.BankTable);
+			this.tabPage5.Location = new System.Drawing.Point(4, 22);
+			this.tabPage5.Margin = new System.Windows.Forms.Padding(2);
+			this.tabPage5.Name = "tabPage5";
+			this.tabPage5.Padding = new System.Windows.Forms.Padding(2);
+			this.tabPage5.Size = new System.Drawing.Size(903, 618);
+			this.tabPage5.TabIndex = 4;
+			this.tabPage5.Text = " Banks";
+			this.tabPage5.UseVisualStyleBackColor = true;
+			// 
+			// BankTable
+			// 
+			this.BankTable.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.BankTable.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn3,
+            this.dataGridViewTextBoxColumn5,
+            this.dataGridViewTextBoxColumn6,
+            this.dataGridViewTextBoxColumn7});
+			this.BankTable.Location = new System.Drawing.Point(1, 3);
+			this.BankTable.Name = "BankTable";
+			this.BankTable.ReadOnly = true;
+			this.BankTable.RowHeadersWidth = 51;
+			this.BankTable.Size = new System.Drawing.Size(903, 615);
+			this.BankTable.TabIndex = 5;
+			this.BankTable.VirtualMode = true;
+			// 
+			// dataGridViewTextBoxColumn3
+			// 
+			this.dataGridViewTextBoxColumn3.HeaderText = "Bank name";
+			this.dataGridViewTextBoxColumn3.MinimumWidth = 6;
+			this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
+			this.dataGridViewTextBoxColumn3.ReadOnly = true;
+			this.dataGridViewTextBoxColumn3.Width = 125;
+			// 
+			// dataGridViewTextBoxColumn5
+			// 
+			this.dataGridViewTextBoxColumn5.HeaderText = "Money";
+			this.dataGridViewTextBoxColumn5.MinimumWidth = 6;
+			this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
+			this.dataGridViewTextBoxColumn5.ReadOnly = true;
+			this.dataGridViewTextBoxColumn5.Width = 125;
+			// 
+			// dataGridViewTextBoxColumn6
+			// 
+			this.dataGridViewTextBoxColumn6.HeaderText = "Amount";
+			this.dataGridViewTextBoxColumn6.MinimumWidth = 6;
+			this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
+			this.dataGridViewTextBoxColumn6.ReadOnly = true;
+			this.dataGridViewTextBoxColumn6.Width = 125;
+			// 
+			// dataGridViewTextBoxColumn7
+			// 
+			this.dataGridViewTextBoxColumn7.HeaderText = "Price";
+			this.dataGridViewTextBoxColumn7.MinimumWidth = 6;
+			this.dataGridViewTextBoxColumn7.Name = "dataGridViewTextBoxColumn7";
+			this.dataGridViewTextBoxColumn7.ReadOnly = true;
+			this.dataGridViewTextBoxColumn7.Width = 125;
+			// 
+			// tabPage6
+			// 
+			this.tabPage6.Controls.Add(this.chart1);
+			this.tabPage6.Location = new System.Drawing.Point(4, 22);
+			this.tabPage6.Name = "tabPage6";
+			this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
+			this.tabPage6.Size = new System.Drawing.Size(903, 618);
+			this.tabPage6.TabIndex = 5;
+			this.tabPage6.Text = "Charts";
+			this.tabPage6.UseVisualStyleBackColor = true;
+			// 
+			// chart1
+			// 
+			chartArea1.Name = "ChartArea1";
+			this.chart1.ChartAreas.Add(chartArea1);
+			legend1.Name = "Legend1";
+			this.chart1.Legends.Add(legend1);
+			this.chart1.Location = new System.Drawing.Point(4, 4);
+			this.chart1.Name = "chart1";
+			series1.ChartArea = "ChartArea1";
+			series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+			series1.Legend = "Legend1";
+			series1.Name = "Series1";
+			series1.YValuesPerPoint = 2;
+			this.chart1.Series.Add(series1);
+			this.chart1.Size = new System.Drawing.Size(899, 614);
+			this.chart1.TabIndex = 0;
+			this.chart1.Text = "chart1";
+			// 
+			// LabourCost
+			// 
+			this.LabourCost.Location = new System.Drawing.Point(1016, 72);
+			this.LabourCost.Name = "LabourCost";
+			this.LabourCost.Size = new System.Drawing.Size(100, 20);
+			this.LabourCost.TabIndex = 4;
+			// 
+			// LabourCostLabel
+			// 
+			this.LabourCostLabel.AutoSize = true;
+			this.LabourCostLabel.Location = new System.Drawing.Point(944, 75);
+			this.LabourCostLabel.Name = "LabourCostLabel";
+			this.LabourCostLabel.Size = new System.Drawing.Size(66, 13);
+			this.LabourCostLabel.TabIndex = 5;
+			this.LabourCostLabel.Text = "Labour cost:";
+			// 
+			// label1
+			// 
+			this.label1.AutoSize = true;
+			this.label1.Location = new System.Drawing.Point(944, 101);
+			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(60, 13);
+			this.label1.TabIndex = 7;
+			this.label1.Text = "Population:";
+			// 
+			// Population
+			// 
+			this.Population.Location = new System.Drawing.Point(1016, 98);
+			this.Population.Name = "Population";
+			this.Population.Size = new System.Drawing.Size(100, 20);
+			this.Population.TabIndex = 6;
+			// 
+			// ChartSelection
+			// 
+			this.ChartSelection.FormattingEnabled = true;
+			this.ChartSelection.Location = new System.Drawing.Point(947, 124);
+			this.ChartSelection.Name = "ChartSelection";
+			this.ChartSelection.Size = new System.Drawing.Size(121, 21);
+			this.ChartSelection.TabIndex = 8;
+			this.ChartSelection.SelectedIndexChanged += new System.EventHandler(this.ChartSelection_SelectedIndexChanged);
 			// 
 			// Main
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1125, 650);
+			this.Controls.Add(this.ChartSelection);
+			this.Controls.Add(this.label1);
+			this.Controls.Add(this.Population);
 			this.Controls.Add(this.LabourCostLabel);
 			this.Controls.Add(this.LabourCost);
 			this.Controls.Add(this.Next10Turns);
@@ -393,6 +547,10 @@
 			((System.ComponentModel.ISupportInitialize)(this.PeopleTable)).EndInit();
 			this.tabPage4.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.ShareSaleTable)).EndInit();
+			this.tabPage5.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.BankTable)).EndInit();
+			this.tabPage6.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -416,8 +574,6 @@
 		private System.Windows.Forms.Label LabourCostLabel;
 		private System.Windows.Forms.TabPage tabPage3;
 		private System.Windows.Forms.DataGridView PeopleTable;
-		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
-		private System.Windows.Forms.DataGridViewTextBoxColumn Moneyperson;
 		private System.Windows.Forms.DataGridViewTextBoxColumn name;
 		private System.Windows.Forms.DataGridViewTextBoxColumn money;
 		private System.Windows.Forms.DataGridViewTextBoxColumn revenue;
@@ -434,6 +590,20 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Amount;
 		private System.Windows.Forms.DataGridViewTextBoxColumn PriceShare;
+		private System.Windows.Forms.TabPage tabPage5;
+		private System.Windows.Forms.DataGridView BankTable;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn5;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn7;
+		private System.Windows.Forms.TabPage tabPage6;
+		private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
+		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.TextBox Population;
+		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
+		private System.Windows.Forms.DataGridViewTextBoxColumn Moneyperson;
+		private System.Windows.Forms.DataGridViewTextBoxColumn Assets;
+		private System.Windows.Forms.ComboBox ChartSelection;
 	}
 }
 

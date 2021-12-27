@@ -11,9 +11,12 @@ using System.Windows.Forms;
 using System.IO;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace StockExchangeRivised
 {
+
+
     public partial class Main : Form
     {
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -25,56 +28,48 @@ namespace StockExchangeRivised
         public static string fileCompanies = "..\\..\\JSON\\Companies.json";
         public static string fileRecipes = "..\\..\\JSON\\Recipes.json";
 
-        public Instances ic;
+        public static Instances ic;
 
 
         #region UI
         void PrintToConsole()
         {
             //Console.Clear();
-            Console.WriteLine("///////Turn:{0}////////", Instances.currentTurn++);
-            /*foreach (var resource in ic.resourceList)
-            {
-                Console.WriteLine("{0} -price:{1:F3}, supplyDemand:{2:F}", resource.name, resource.price, resource.supply / resource.demand);
-            }
-            Console.WriteLine();
-            foreach (var company in ic.companyList)
-            {
-                Console.WriteLine("{0} - revenue:{1:F}, money:{2:F}, value:{3:F}, actualproduction5:{4:F}", company.name, company.revenue, company.money, company.value, company.info.actualProductionPast5Turns);
-            }
-            Console.WriteLine();
-            foreach (var human in ic.AIList)
-            {
-                Console.WriteLine("{0} - money:{1:F}", human.name, human.money);
-            }
-			*/
-            Console.WriteLine("pop:{0}, money:{1}", ic.population.people, ic.population.money);
+            Console.WriteLine("///////Turn:{0}////////", Instances.currentTurn);
+            Console.WriteLine("pop:{0}, money:{1}, spent:{2}", ic.population.people, ic.population.money, ic.population.spentLast);
+            Console.WriteLine("inflation:{0}", ic.population.inflation25);
             Console.WriteLine();
         }
         void PopulateCompanyTable()
         {
             //Console.WriteLine(CompanyTable.Rows.Count);
-            while (CompanyTable.Rows.Count > 1)
-            {
-                CompanyTable.Rows.RemoveAt(0);
-            }
+            /*  while (CompanyTable.Rows.Count > 1)
+              {
+                  CompanyTable.Rows.RemoveAt(0);
+              }*/
 
             try
             {
-                foreach (var company in ic.companyList)
+                for (int i = 0; i < ic.companyList.Count; i++)
                 {
-                    int index = CompanyTable.Rows.Add();
+                    int index = i;
+                    if (CompanyTable.RowCount - 1 <= i) index = CompanyTable.Rows.Add();
                     DataGridViewRow row = CompanyTable.Rows[index];
+                    Company company = ic.companyList[i];
                     row.Cells[0].Value = company.name;
-                    row.Cells[1].Value = Math.Round(company.money, 3);
+                    row.Cells[1].Value = Math.Round(company.money, 2);
                     row.Cells[2].Value = Math.Round(company.revenue, 3);
-                    row.Cells[3].Value = Math.Round(company.value, 3);
+                    row.Cells[3].Value = Math.Round(company.value, 1);
                     row.Cells[4].Value = company.productionVolume;
                     row.Cells[5].Value = company.productionOutput;
                     row.Cells[6].Value = company.productionInput;
                     row.Cells[7].Value = Math.Round(company.info.actualProduction, 3) * 100 + "%";
-                    row.Cells[8].Value = company.productionRecipe;
-                    row.Cells[9].Value = company.info.costToProduce;
+                    row.Cells[8].Value = company.productionRecipe.name;
+                    row.Cells[9].Value = Math.Round(company.info.costToProduce, 2);
+                }
+                for (int i = ic.companyList.Count; i < CompanyTable.RowCount - 1; i++)
+                {
+                    CompanyTable.Rows.RemoveAt(i);
                 }
             }
             catch { }
@@ -101,49 +96,96 @@ namespace StockExchangeRivised
             }
             catch { }
         }
-		void PopulatePeopleTable()
-		{
-			while (PeopleTable.Rows.Count > 1)
-			{
-				PeopleTable.Rows.RemoveAt(0);
-			}
+        void PopulatePeopleTable()
+        {
+            while (PeopleTable.Rows.Count > 1)
+            {
+                PeopleTable.Rows.RemoveAt(0);
+            }
 
-			try
-			{
-				foreach (var person in ic.AIList)
-				{
-					int index = PeopleTable.Rows.Add();
-					DataGridViewRow row = PeopleTable.Rows[index];
-					row.Cells[0].Value = person.name;
-					row.Cells[1].Value = Math.Round(person.money, 1);
+            try
+            {
+                foreach (var person in ic.AIList)
+                {
+                    int index = PeopleTable.Rows.Add();
+                    DataGridViewRow row = PeopleTable.Rows[index];
+                    row.Cells[0].Value = person.name;
+                    row.Cells[1].Value = Math.Round(person.money, 1);
 
-				}
+                }
+            }
+            catch { }
+        }
+        void PopulateShareSaleTable()
+        {
+            while (ShareSaleTable.Rows.Count > 1)
+            {
+                ShareSaleTable.Rows.RemoveAt(0);
+            }
+
+            try
+            {
+                foreach (var sale in ic.shareSaleListing)
+                {
+                    int index = ShareSaleTable.Rows.Add();
+                    DataGridViewRow row = ShareSaleTable.Rows[index];
+                    row.Cells[0].Value = sale.sellerName;
+                    row.Cells[1].Value = sale.company;
+                    row.Cells[2].Value = Math.Round(sale.amount, 1);
+                    row.Cells[3].Value = Math.Round(sale.price, 3);
+                }
+            }
+            catch { }
+        }
+        List<ChartData> chartDataPoints = new List<ChartData>();
+        ChartType chartType = ChartType.CompanyValue;
+        struct ChartData {
+            public int time;
+            public double gdp;
+            public double marketValue;
+
+			public ChartData(int time, double gdp, double marketValue)
+			{
+				this.time = time;
+				this.gdp = gdp;
+				this.marketValue = marketValue;
 			}
-			catch { }
 		}
-		void PopulateShareSaleTable()
-		{
-			while (ShareSaleTable.Rows.Count > 1)
-			{
-				ShareSaleTable.Rows.RemoveAt(0);
-			}
+        int maxTimeGap = 500;
+        public enum ChartType
+        {
+            GDP,
+            CompanyValue
+        }
+        void UpdateChart() {
+            chartDataPoints.Add(new ChartData(Instances.currentTurn, ic.companyList.Sum(x => x.productionVolume), ic.companyList.Sum(x => x.value)));
+            DrawChart();
+        }
+        int windowIndex = 0;
+        void DrawChart() {
+            List<ChartData> dataWindow = new List<ChartData>(chartDataPoints);
+            var timespots = chartDataPoints.Select(x => x.time).ToList().GetRange(windowIndex, chartDataPoints.Count - windowIndex);
+            if (timespots.Count > 0 && timespots[timespots.Count - 1] - timespots[0] > maxTimeGap) {
+                windowIndex += timespots.FindLastIndex(x => timespots[timespots.Count - 1] - x > maxTimeGap);
+                dataWindow = chartDataPoints.GetRange(windowIndex, chartDataPoints.Count - windowIndex);
+            }
+           
 
-			try
-			{
-				foreach (var sale in ic.shareSaleListing)
-				{
-					int index = ShareSaleTable.Rows.Add();
-					DataGridViewRow row = ShareSaleTable.Rows[index];
-					row.Cells[0].Value = sale.sellerName;
-					row.Cells[1].Value = sale.company;
-					row.Cells[2].Value = Math.Round(sale.amount, 1);
-					row.Cells[3].Value = Math.Round(sale.price, 3);
-				}
-			}
-			catch { }
-		}
-		#endregion
-		private readonly SynchronizationContext synchronizationContext;
+            chart1.Series["Series1"].Points.DataBindXY(dataWindow.Select(x => x.time).ToList(), dataWindow.Select(x => x.gdp).ToList());
+            chart1.ChartAreas[0].AxisY.Title = chartType.ToString();
+            switch (chartType) {
+                case ChartType.GDP:
+                    chart1.Series["Series1"].Points.DataBindXY(dataWindow.Select(x => x.time).ToList(), dataWindow.Select(x => x.gdp).ToList());
+                    break;
+                case ChartType.CompanyValue:
+                    chart1.Series["Series1"].Points.DataBindXY(dataWindow.Select(x => x.time).ToList(), dataWindow.Select(x => x.marketValue).ToList());
+                    break;
+            }
+            List<double> dataY = chart1.Series["Series1"].Points.Select(x => x.YValues[0]).ToList();
+            //if(dataY.Count>0)chart1.ChartAreas[0].AxisY.Minimum = (int)MyMath.Clamp(dataY[0] - dataY[0] / 6, 0, dataY[0]);
+        }
+        #endregion
+        private readonly SynchronizationContext synchronizationContext;
         private DateTime previousTime = DateTime.Now;
         List<SaleWindow> saleWindows = new List<SaleWindow>();
 
@@ -153,25 +195,28 @@ namespace StockExchangeRivised
             synchronizationContext = SynchronizationContext.Current;
             Initialize();
             ic.Read();
-			
+            ChartSelection.DataSource = Enum.GetValues(typeof(ChartType));
+            //ChartSelection.SelectedValue = chartType.ToString();
         }
         void Initialize()
         {
             ic = new Instances();
-            ic.population = new Population(ic, 100, 1000, 0.1);
+            ic.population = new Population(ic, 100, 3000, 0.1);
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             AllocConsole();
-			UpdateUI();
-		}
+            BankTable.CellValueNeeded += BankTable_CellValueNeeded;
+            PeopleTable.CellValueNeeded += PeopleTable_CellValueNeeded;
+            
+            UpdateUI();
+        }
 
         private void nextTurn_Click(object sender, EventArgs e)
         {
             ic.NextCalculation();
-			UpdateUI();
-            
+            UpdateUI();
         }
 
         async private void Next10Turns_Click(object sender, EventArgs e)
@@ -180,14 +225,12 @@ namespace StockExchangeRivised
             {
 				lock (this)
 				{
-					for (int i = 0; i < 100; i++)
+					for (int i = 0; i < 30; i++)
 					{
 						ic.NextCalculation();
-						
 						//Thread.Sleep(35);
 					}
-					UpdateUI();
-					
+                    UpdateUI();
 				}
             });
             PrintToConsole();
@@ -203,10 +246,20 @@ namespace StockExchangeRivised
             {
                 PopulateCompanyTable();
                 PopulateResourceTable();
-				PopulatePeopleTable();
-				if (ShareSaleTable.Visible) PopulateShareSaleTable();
-				LabourCost.Text = ""+ Math.Round(ic.population.labourCost,3);
-				PrintToConsole();
+
+                PeopleTable.RowCount = ic.AIList.Count + 1;
+                PeopleTable.Invalidate();
+
+                if (ShareSaleTable.Visible) PopulateShareSaleTable();
+
+                BankTable.RowCount = ic.bankList.Count + 1;
+                BankTable.Invalidate();
+
+                UpdateChart();
+
+                LabourCost.Text = ""+ Math.Round(ic.population.labourCost,3);
+                Population.Text = "" + ic.population.people;
+                PrintToConsole();
 				
             }), value);
 
@@ -224,5 +277,73 @@ namespace StockExchangeRivised
                 saleWindows.Add(saleWindow);
             }
         }
+        private void BankTable_CellValueNeeded(object sender,
+	        DataGridViewCellValueEventArgs e)
+        {
+	        if (e.RowIndex == BankTable.RowCount - 1) return;
+	        Bank bank = ic.bankList[e.RowIndex]; ;
+	        // Set the cell value to paint using the Customer object retrieved.
+	        switch (e.ColumnIndex)
+	        {
+		        case 0:
+			        e.Value = bank.name;
+			        break;
+
+		        case 1:
+			        e.Value = bank.money;
+			        break;
+	        }
+        }
+        private void PeopleTable_CellValueNeeded(object sender,
+	        DataGridViewCellValueEventArgs e)
+        {
+	        if (e.RowIndex == PeopleTable.RowCount - 1) return;
+	        AI person = ic.AIList[e.RowIndex];
+	        // Set the cell value to paint using the Customer object retrieved.
+	        switch (e.ColumnIndex)
+	        {
+		        case 0:
+			        e.Value = person.name;
+			        break;
+		        case 1:
+			        e.Value = person.money;
+			        break;
+                case 2:
+                    e.Value = person.OwnedAssets();
+                    break;
+            }
+        }
+
+		private void ChartSelection_SelectedIndexChanged(object sender, EventArgs e)
+		{
+            Enum.TryParse(ChartSelection.SelectedValue.ToString(), out chartType);
+            DrawChart();
+        }
+	}
+
+	public static class MyMath
+    {
+	    public static T Clamp<T>(this T val, T min, T max) where T : IComparable<T>
+	    {
+		    if (val.CompareTo(min) < 0) return min;
+		    else if (val.CompareTo(max) > 0) return max;
+		    else return val;
+	    }
+        private static Random rng = new Random();  
+
+        public static List<T> Shuffle<T>(this List<T> list)  
+        {  
+            List<T> newlist = new List<T>(list);
+            int n = list.Count;  
+            while (n > 1) {  
+                n--;  
+                int k = rng.Next(n + 1);  
+                T value = newlist[k];  
+                newlist[k] = newlist[n];  
+                newlist[n] = value;  
+            }
+            return newlist;
+        }
     }
+   
 }

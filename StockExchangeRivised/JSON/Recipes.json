@@ -1,7 +1,7 @@
 ﻿[
 	{
 		"name":"wheat-bread",
-		"labourToProduce":3,
+		"labourToProduce":2,
 		"costToBuild":50,
 		"input":
 		[
@@ -30,6 +30,87 @@
 			{
 				"name":"wheat",
 				"amount":1
+			}
+		]
+	},
+	{
+		"name":"-coal",
+		"labourToProduce":1,
+		"costToBuild":50,
+		"input":
+		[
+		],
+		"output":
+		[
+			{
+				"name":"coal",
+				"amount":1
+			}
+		]
+	},
+	{
+		"name":"-wood",
+		"labourToProduce":1,
+		"costToBuild":50,
+		"input":
+		[
+		],
+		"output":
+		[
+			{
+				"name":"wood",
+				"amount":1
+			}
+		]
+	},
+	{
+		"name": "wood-furniture",
+		"labourToProduce": 4,
+		"costToBuild": 150,
+		"input": [
+			{
+				"name": "wood",
+				"amount": 4
+			}
+		],
+		"output": [
+			{
+				"name": "furniture",
+				"amount": 1
+			}
+		]
+	},
+	{
+		"name": "coal-electricity",
+		"labourToProduce": 0.5,
+		"costToBuild": 50,
+		"input": [
+			{
+				"name": "coal",
+				"amount": 1
+			}
+		],
+		"output": [
+			{
+				"name": "electricity",
+				"amount": 1
+			}
+		]
+	},
+	{
+		"name": "wood-electricity",
+		"labourToProduce": 0.5,
+		"costToBuild": 25,
+		"input": [
+			{
+				"name": "wood",
+				"amount": 1
+			}
+		],
+		"output": [
+			{
+				"name": "electricity",
+				"amount": 0.9
 			}
 		]
 	}

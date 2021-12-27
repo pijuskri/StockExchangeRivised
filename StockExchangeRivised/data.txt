@@ -1,22 +1,13 @@
-#Company
-BakingCompany 10 10 3 0.1 0 0 0 1 0 1 1 wheat-bread
-BakingCompanyNextGen 10 10 3 0.1 0 0 0 1 0 1 1 wheat-bread
-WheatCompany 10 10 3 0.1 0 0 0 1 0 1 1 -wheat
-
-#Resource
-wheat natural 0.3 100 1 0.3 0.3 0 0
-bread base 0.6 100 1 0.6 0.3 0 0
-
 #AI
-Bill 2000 0.1 0.1
-John 2000 0.1 0.1
+Bill 1000 0.1 0.1
+John 1000 0.1 0.1
 
 #Bank
-NationalBank 3 1000 100
+NationalBank 0.1 5000 100
 
 #Pop consumption
 bread 0.1
-
-#Production templates
-wheat-bread 3 wheat 1 / bread 1
--wheat 2 / wheat 1
+coal 0.1
+furniture 0.05
+wood 0.01
+electricity 0.03

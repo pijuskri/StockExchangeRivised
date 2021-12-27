@@ -35,7 +35,7 @@ namespace StockExchangeRivised
                     DataGridViewRow row = SaleTable.Rows[index];
                     row.Cells[0].Value = Math.Round(sale.amount,3);
                     row.Cells[1].Value = Math.Round(sale.price,3);
-                    row.Cells[2].Value = sale.company;
+                    row.Cells[2].Value = sale.company.name;
                     row.Cells[3].Value = Math.Round(sale.soldLastTick,3);
                 }
             }
